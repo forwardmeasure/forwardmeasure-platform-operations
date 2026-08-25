@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.forwardmeasure.platform.operations</groupId>
+        <artifactId>forwardmeasure-platform-operations</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>operations-api-application</artifactId>
+    <name>ForwardMeasure Platform Operations :: API :: Application</name>
+    <!--
+    Only the generated model, at the explicit mapping edge PlatformHealthService builds
+    PlatformComponent values at - no JAX-RS, no framework dependency of any kind, matching
+    openworkflow-execution-management-application's own pom.xml (PROJECT_MANIFESTO.md 3.9).
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>operations-api-models</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

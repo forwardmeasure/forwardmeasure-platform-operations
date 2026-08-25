@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.forwardmeasure.platform</groupId>
+        <artifactId>forwardmeasure-platform</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../forwardmeasure-platform/pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.forwardmeasure.platform.operations</groupId>
+    <artifactId>forwardmeasure-platform-operations</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <name>ForwardMeasure Platform Operations</name>
+    <description>Shared platform operations API, operator dashboard and identity experience</description>
+    <url>https://github.com/forwardmeasure/forwardmeasure-platform-operations</url>
+
+    <properties>
+        <revision>1.0.0</revision>
+    </properties>
+
+    <scm>
+        <connection>scm:git:https://github.com/forwardmeasure/forwardmeasure-platform-operations.git</connection>
+        <developerConnection>scm:git:git@github.com:forwardmeasure/forwardmeasure-platform-operations.git</developerConnection>
+        <url>https://github.com/forwardmeasure/forwardmeasure-platform-operations</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <modules>
+        <module>operations-api-language-bindings</module>
+        <module>operations-api-application</module>
+        <module>operations-api-jaxrs</module>
+        <module>operations-dashboard</module>
+        <module>operations-keycloak-theme</module>
+        <module>operations-framework-bindings</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.forwardmeasure.platform</groupId>
+                <artifactId>forwardmeasure-platform-core-bom</artifactId>
+                <version>${forwardmeasure.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>operations-api-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>operations-api-server-jaxrs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>operations-api-application</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>operations-api-jaxrs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>operations-dashboard-webapp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

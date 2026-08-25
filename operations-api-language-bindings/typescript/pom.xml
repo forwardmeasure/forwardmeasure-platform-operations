@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.forwardmeasure.platform.operations</groupId>
+        <artifactId>operations-api-language-bindings</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>operations-api-typescript-bindings</artifactId>
+    <packaging>pom</packaging>
+    <name>ForwardMeasure Platform Operations :: API :: TypeScript Bindings</name>
+    <modules>
+        <module>operations-api-client-typescript</module>
+    </modules>
+</project>

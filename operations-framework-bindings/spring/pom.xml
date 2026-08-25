@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.forwardmeasure.platform.operations</groupId>
+        <artifactId>operations-framework-bindings</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>operations-spring-binding</artifactId>
+    <name>ForwardMeasure Platform Operations :: Spring Binding</name>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.forwardmeasure.platform</groupId>
+                <artifactId>forwardmeasure-platform-spring-bom</artifactId>
+                <version>${forwardmeasure.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <properties>
+        <container-image.name>forwardmeasure-platform-operations</container-image.name>
+    </properties>
+    <dependencies>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-api-application</artifactId></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-api-jaxrs</artifactId></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-dashboard-webapp</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter</artifactId></dependency>
+        <!-- Hosts the shared -jaxrs resources via Jersey, exactly matching
+        openworkflow-execution-management-spring-binding's own pom.xml (its comment cites
+        OpenWorkflowDefinitionManagementSpringBinding as using the identical pattern). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jersey</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.hk2.external</groupId>
+                    <artifactId>aopalliance-repackaged</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.el</groupId>
+                    <artifactId>jakarta.el-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Validates the bearer token and populates SecurityContextHolder for
+        @RolesAllowed/RolesAllowedDynamicFeature (registered in the binding class) to check
+        against - the OIDC/JWT equivalent of Quarkus's quarkus-oidc dependency. -->
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals><goal>repackage</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <!-- docker-maven-plugin + Dockerfile.jvm, not Jib - matches
+    openworkflow-deployments/execution-management/spring's own convention exactly. -->
+    <profiles>
+        <profile>
+            <id>container-image</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${container-image.registry}/${container-image.group}/${container-image.name}:${container-image.tag}</name>
+                                    <build>
+                                        <contextDir>${project.basedir}</contextDir>
+                                        <dockerFile>src/main/docker/Dockerfile.jvm</dockerFile>
+                                        <args>
+                                            <APPLICATION_JAR>target/${project.build.finalName}.jar</APPLICATION_JAR>
+                                            <BASE_IMAGE>${container-image.base-jre}</BASE_IMAGE>
+                                        </args>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-container-image</id>
+                                <phase>package</phase>
+                                <goals><goal>build</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

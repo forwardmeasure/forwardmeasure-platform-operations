@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.forwardmeasure.platform.operations</groupId>
+        <artifactId>operations-framework-bindings</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>operations-micronaut-binding</artifactId>
+    <name>ForwardMeasure Platform Operations :: Micronaut Binding</name>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.forwardmeasure.platform</groupId>
+                <artifactId>forwardmeasure-platform-micronaut-bom</artifactId>
+                <version>${forwardmeasure.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <properties>
+        <container-image.name>forwardmeasure-platform-operations</container-image.name>
+    </properties>
+    <dependencies>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-api-application</artifactId></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-api-jaxrs</artifactId></dependency>
+        <dependency><groupId>${project.groupId}</groupId><artifactId>operations-dashboard-webapp</artifactId></dependency>
+        <dependency><groupId>io.micronaut</groupId><artifactId>micronaut-context</artifactId></dependency>
+        <dependency><groupId>io.micronaut</groupId><artifactId>micronaut-http</artifactId></dependency>
+        <dependency><groupId>io.micronaut</groupId><artifactId>micronaut-http-server-netty</artifactId></dependency>
+        <dependency><groupId>io.micronaut.serde</groupId><artifactId>micronaut-serde-jackson</artifactId></dependency>
+        <!-- Hosts the shared -jaxrs resources - the Micronaut equivalent of Quarkus's
+        quarkus-rest-jackson/Spring's spring-boot-starter-jersey. -->
+        <dependency><groupId>io.micronaut.jaxrs</groupId><artifactId>micronaut-jaxrs-server</artifactId></dependency>
+        <!-- Binds Micronaut's Authentication into a JAX-RS @Context SecurityContext - NOT a
+        @RolesAllowed/@PermitAll bridge (confirmed by inspecting the jar: it's 4 classes, all
+        SecurityContext-binding). Actual per-resource authorization for the JAX-RS resources here
+        goes through micronaut.security.intercept-url-map (see application.properties) - Micronaut
+        Security's route-annotation rule doesn't see JAX-RS resource-class annotations at all,
+        since JAX-RS dispatch happens through a generic bridge route, not per-method native routes. -->
+        <dependency><groupId>io.micronaut.jaxrs</groupId><artifactId>micronaut-jaxrs-server-security</artifactId></dependency>
+        <dependency><groupId>io.micronaut.security</groupId><artifactId>micronaut-security-jwt</artifactId></dependency>
+        <!-- PlatformDashboardConfigResource (operations-api-jaxrs, shared unchanged across all
+        three frameworks) needs a plain com.fasterxml.jackson.databind.ObjectMapper (Jackson 2).
+        Neither micronaut-serde-jackson nor io.micronaut:micronaut-jackson-databind provide one on
+        this platform version - the latter's own ObjectMapperFactory only produces a Jackson 3
+        (tools.jackson.databind) mapper, confirmed by inspecting its bytecode - so
+        PlatformDashboardMicronautBinding produces this bean itself; this raw library is all that
+        needs to be on the classpath for that. -->
+        <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId></dependency>
+        <dependency><groupId>ch.qos.logback</groupId><artifactId>logback-classic</artifactId><scope>runtime</scope></dependency>
+        <dependency><groupId>io.micronaut</groupId><artifactId>micronaut-inject-java</artifactId><scope>provided</scope></dependency>
+        <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths combine.children="append">
+                        <path>
+                            <groupId>io.micronaut</groupId>
+                            <artifactId>micronaut-inject-java</artifactId>
+                        </path>
+                        <!-- Registers Micronaut's AnnotationMapper/AnnotationRemapper/TypeElementVisitor
+                        SPI hooks (META-INF/services) that remap @Path/@GET/etc into Micronaut's native
+                        route model at compile time. Explicitly listing annotationProcessorPaths at all
+                        stops Maven from scanning the regular compile classpath for processors, so this
+                        was needed here even though micronaut-jaxrs-server/-security are already compile
+                        dependencies - being on the compile classpath doesn't put a jar on the processor
+                        path too. -->
+                        <path>
+                            <groupId>io.micronaut.jaxrs</groupId>
+                            <artifactId>micronaut-jaxrs-processor</artifactId>
+                        </path>
+                        <!-- Same class of gap as micronaut-jaxrs-processor above: without this on the
+                        processor path, @SerdeImport/@Serdeable are never actually processed at compile
+                        time, so @SerdeImport(PlatformComponent.class) silently does nothing - confirmed
+                        the hard way (a 500 "No serializable introspection present" persisted even with
+                        the annotation in place, until this was added). -->
+                        <path>
+                            <groupId>io.micronaut.serde</groupId>
+                            <artifactId>micronaut-serde-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dependency</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.forwardmeasure.platform.dashboard.micronaut.PlatformDashboardMicronautApplication</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>dependency/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <!-- docker-maven-plugin + Dockerfile.jvm, matching
+    openworkflow-deployments/execution-management/micronaut's own convention exactly. -->
+    <profiles>
+        <profile>
+            <id>container-image</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${container-image.registry}/${container-image.group}/${container-image.name}:${container-image.tag}</name>
+                                    <build>
+                                        <contextDir>${project.basedir}</contextDir>
+                                        <dockerFile>src/main/docker/Dockerfile.jvm</dockerFile>
+                                        <args>
+                                            <APPLICATION_JAR>target/${project.build.finalName}.jar</APPLICATION_JAR>
+                                            <DEPENDENCY_DIR>target/dependency</DEPENDENCY_DIR>
+                                            <BASE_IMAGE>${container-image.base-jre}</BASE_IMAGE>
+                                        </args>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-container-image</id>
+                                <phase>package</phase>
+                                <goals><goal>build</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

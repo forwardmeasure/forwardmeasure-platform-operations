@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: forwardmeasure-platform-operations
+  jersey:
+    application-path: /platform
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${PLATFORM_DASHBOARD_OIDC_ISSUER}
+
+management:
+  server:
+    base-path: /q
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+
+forwardmeasure:
+  platform:
+    dashboard:
+      oidc-url: ${PLATFORM_DASHBOARD_OIDC_URL}
+      oidc-realm: ${PLATFORM_DASHBOARD_OIDC_REALM}
+      oidc-client-id: ${PLATFORM_DASHBOARD_OIDC_CLIENT_ID}
+      environment: ${PLATFORM_DASHBOARD_ENVIRONMENT:Production}
+      probe-timeout: ${PLATFORM_DASHBOARD_PROBE_TIMEOUT:PT2S}
+      observation-ttl: ${PLATFORM_DASHBOARD_OBSERVATION_TTL:PT10S}
