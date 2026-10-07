@@ -22,9 +22,13 @@ public record PlatformDashboardSettings(
     Duration observationTtl,
     List<Tenant> tenants,
     List<Application> applications,
-    List<Component> components) {
+    List<Component> components,
+    String platformDisplayName) {
 
   public PlatformDashboardSettings {
+    if (platformDisplayName == null || platformDisplayName.isBlank()) {
+      throw new IllegalArgumentException("platformDisplayName must not be blank");
+    }
     tenants = List.copyOf(tenants);
     applications = List.copyOf(applications);
     components = List.copyOf(components);

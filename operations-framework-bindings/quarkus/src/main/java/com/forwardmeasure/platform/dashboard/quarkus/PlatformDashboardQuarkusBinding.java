@@ -1,5 +1,6 @@
 package com.forwardmeasure.platform.dashboard.quarkus;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardConfigurationValidator;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardSettings;
@@ -34,7 +35,8 @@ public class PlatformDashboardQuarkusBinding {
 
   @Produces
   @Singleton
-  PlatformDashboardSettings settings(PlatformDashboardConfiguration configuration) {
+  PlatformDashboardSettings settings(PlatformDashboardConfiguration configuration,
+      @ConfigProperty(name = "forwardmeasure.platform.display-name", defaultValue = "kriyagentic") String platformDisplayName) {
     return new PlatformDashboardSettings(
         configuration.oidcUrl(),
         configuration.oidcRealm(),
@@ -48,7 +50,8 @@ public class PlatformDashboardQuarkusBinding {
             .toList(),
         configuration.components().stream()
             .map(PlatformDashboardQuarkusBinding::toComponent)
-            .toList());
+            .toList(),
+        platformDisplayName);
   }
 
   // Observer, not just @Startup on this class - @Startup eagerly instantiates the whole bean,

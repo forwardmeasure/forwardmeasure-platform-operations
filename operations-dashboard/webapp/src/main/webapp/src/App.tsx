@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { PlatformIdentity } from "./runtime";
 import { summarize, titleCase } from "./status";
+import { platformDisplayName } from "./branding";
 
 type ThemePreference = "light" | "dark" | "system";
 
@@ -68,7 +69,7 @@ export function App({ identity }: { identity: PlatformIdentity }) {
   const summary = summarize(components);
   return <div className="platform-shell">
     <aside className="platform-nav">
-      <a className="brand" href="./"><span className="brand-mark"><Boxes size={19}/></span><span>ForwardMeasure</span></a>
+      <a className="brand" href="./"><span className="brand-mark"><Boxes size={19}/></span><span>{platformDisplayName()}</span></a>
       <nav aria-label="Platform Navigation">
         <a aria-current="page" href="#overview"><Activity size={18}/>Overview</a>
         <a href="#applications"><LayoutGrid size={18}/>Applications</a>

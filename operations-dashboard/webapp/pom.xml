@@ -106,7 +106,7 @@
                         <id>npm-test</id>
                         <phase>test</phase>
                         <goals><goal>npm</goal></goals>
-                        <configuration><arguments>test</arguments></configuration>
+                        <configuration><arguments>test</arguments><skip>${skipTests}</skip></configuration>
                     </execution>
                 </executions>
             </plugin>

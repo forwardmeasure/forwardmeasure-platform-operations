@@ -1,5 +1,6 @@
 package com.forwardmeasure.platform.dashboard.micronaut;
 
+import io.micronaut.context.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardConfigurationValidator;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardSettings;
@@ -42,7 +43,8 @@ public class PlatformDashboardMicronautBinding {
       PlatformDashboardMicronautProperties properties,
       List<PlatformDashboardMicronautTenant> tenants,
       List<PlatformDashboardMicronautLinkedApp> linkedApps,
-      List<PlatformDashboardMicronautComponent> components) {
+      List<PlatformDashboardMicronautComponent> components,
+      @Value("${forwardmeasure.platform.display-name:kriyagentic}") String platformDisplayName) {
     return new PlatformDashboardSettings(
         properties.oidcUrl(),
         properties.oidcRealm(),
@@ -52,7 +54,8 @@ public class PlatformDashboardMicronautBinding {
         properties.observationTtl(),
         tenants.stream().map(PlatformDashboardMicronautBinding::toTenant).toList(),
         linkedApps.stream().map(PlatformDashboardMicronautBinding::toApplication).toList(),
-        components.stream().map(PlatformDashboardMicronautBinding::toComponent).toList());
+        components.stream().map(PlatformDashboardMicronautBinding::toComponent).toList(),
+        platformDisplayName);
   }
 
   @Singleton

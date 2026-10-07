@@ -2,6 +2,7 @@ import Keycloak, { type KeycloakTokenParsed } from "keycloak-js";
 import { Configuration, PlatformApi } from "../generated-api/src/index";
 
 export type RuntimeConfiguration = {
+  platformDisplayName?: string;
   tenantContextUrl: string;
   apiUrl: string;
   environment: string;

@@ -42,7 +42,8 @@ class PlatformDashboardResourceTest {
         .get("/config.js")
         .then()
         .statusCode(200)
-        .body(containsString("__FORWARDMEASURE_PLATFORM_CONFIG__"));
+        .body(containsString("__FORWARDMEASURE_PLATFORM_CONFIG__"))
+        .body(containsString("\"platformDisplayName\":\"kriyagentic\""));
   }
 
   @Test

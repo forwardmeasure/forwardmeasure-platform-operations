@@ -21,7 +21,7 @@
         </dependencies>
     </dependencyManagement>
     <properties>
-        <container-image.name>forwardmeasure-platform-operations</container-image.name>
+        <container-image.name>forwardmeasure-platform-operations-spring</container-image.name>
     </properties>
     <dependencies>
         <dependency><groupId>${project.groupId}</groupId><artifactId>operations-api-application</artifactId></dependency>

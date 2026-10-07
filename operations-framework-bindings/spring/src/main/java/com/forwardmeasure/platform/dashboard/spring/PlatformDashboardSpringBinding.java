@@ -1,5 +1,6 @@
 package com.forwardmeasure.platform.dashboard.spring;
 
+import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardConfigurationValidator;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardSettings;
@@ -58,7 +59,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class PlatformDashboardSpringBinding {
 
   @Bean
-  PlatformDashboardSettings settings(PlatformDashboardSpringProperties properties) {
+  PlatformDashboardSettings settings(PlatformDashboardSpringProperties properties,
+      @Value("${forwardmeasure.platform.display-name:kriyagentic}") String platformDisplayName) {
     return new PlatformDashboardSettings(
         properties.oidcUrl(),
         properties.oidcRealm(),
@@ -70,7 +72,8 @@ public class PlatformDashboardSpringBinding {
         properties.applications().stream()
             .map(PlatformDashboardSpringBinding::toApplication)
             .toList(),
-        properties.components().stream().map(PlatformDashboardSpringBinding::toComponent).toList());
+        properties.components().stream().map(PlatformDashboardSpringBinding::toComponent).toList(),
+        platformDisplayName);
   }
 
   @Bean

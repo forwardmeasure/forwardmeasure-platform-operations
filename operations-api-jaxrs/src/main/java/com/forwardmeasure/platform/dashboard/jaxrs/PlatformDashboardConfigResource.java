@@ -37,6 +37,8 @@ public class PlatformDashboardConfigResource {
                       "/platform/tenant-context",
                       "apiUrl",
                       "/platform/api/v1",
+                      "platformDisplayName",
+                      settings.platformDisplayName(),
                       "environment",
                       settings.environment(),
                       "applications",
