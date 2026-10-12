@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements. See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License. You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -14,6 +30,15 @@
         <webui-build-dir>${project.build.directory}/webapp</webui-build-dir>
     </properties>
     <dependencies>
+        <!-- Build order only: the presentation-system package is unpacked from this artifact below. The pom-type dependency makes the reactor build it first without adding its files to the Java classpath. -->
+        <dependency>
+          <groupId>com.forwardmeasure.presentation</groupId>
+          <artifactId>forwardmeasure-presentation-system-web</artifactId>
+          <version>${forwardmeasure.presentation-system.version}</version>
+          <type>pom</type>
+          <scope>provided</scope>
+          <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>operations-api-client-typescript</artifactId>
@@ -24,6 +49,34 @@
     </dependencies>
     <build>
         <plugins>
+            <!-- The shared presentation system (tokens, kg- component styles, fonts, theme logic) as
+                 an npm package, unpacked into the staged build directory beside the generated API
+                 client; package.json depends on it as file:presentation-system-unpacked/... Always
+                 overwritten, because the same release version is reinstalled during development. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-presentation-system</id>
+                        <phase>initialize</phase>
+                        <goals><goal>unpack</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.forwardmeasure.presentation</groupId>
+                                    <artifactId>forwardmeasure-presentation-system-web</artifactId>
+                                    <version>${forwardmeasure.presentation-system.version}</version>
+                                    <includes>presentation-system/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${webui-build-dir}/presentation-system-unpacked</outputDirectory>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

@@ -1,6 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.forwardmeasure.platform.dashboard.spring;
 
-import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardConfigurationValidator;
 import com.forwardmeasure.platform.dashboard.PlatformDashboardSettings;
@@ -14,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jersey.autoconfigure.ResourceConfigCustomizer;
@@ -59,7 +75,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class PlatformDashboardSpringBinding {
 
   @Bean
-  PlatformDashboardSettings settings(PlatformDashboardSpringProperties properties,
+  PlatformDashboardSettings settings(
+      PlatformDashboardSpringProperties properties,
       @Value("${forwardmeasure.platform.display-name:kriyagentic}") String platformDisplayName) {
     return new PlatformDashboardSettings(
         properties.oidcUrl(),

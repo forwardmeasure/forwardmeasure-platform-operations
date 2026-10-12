@@ -1,46 +1,46 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import { useEffect, useState } from "react";
 import type { PlatformComponent } from "../generated-api/src/index";
 import {
-  Activity,
   Boxes,
-  Database,
+  CircleAlert,
+  CircleCheck,
+  CircleHelp,
   ExternalLink,
-  LayoutGrid,
-  LogOut,
-  Moon,
+  Inbox,
   RefreshCw,
-  ShieldCheck,
-  Sun,
+  TriangleAlert,
 } from "lucide-react";
+import { initTheme } from "@forwardmeasure/presentation-system/theme";
 import type { PlatformIdentity } from "./runtime";
 import { summarize, titleCase } from "./status";
-import { platformDisplayName } from "./branding";
+import { platformDisplayName, PRODUCT_NAME } from "./branding";
+import { TopBar } from "@forwardmeasure/presentation-system/shell";
 
-type ThemePreference = "light" | "dark" | "system";
+const ICON = { size: 16, strokeWidth: 1.5, absoluteStrokeWidth: true, "aria-hidden": true } as const;
 
-const THEME_STORAGE_KEY = "forwardmeasure-theme";
-
-function storedThemePreference(): ThemePreference {
-  const value = localStorage.getItem(THEME_STORAGE_KEY);
-  return value === "light" || value === "dark" || value === "system"
-    ? value
-    : "system";
-}
-
-function systemPrefersDark(): boolean {
-  return typeof window.matchMedia === "function"
-    && window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
+type Section = "overview" | "applications" | "services";
 
 export function App({ identity }: { identity: PlatformIdentity }) {
   const [components, setComponents] = useState<PlatformComponent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const [themePreference, setThemePreference] = useState<ThemePreference>(storedThemePreference);
-  const [systemDark, setSystemDark] = useState(systemPrefersDark);
-  const theme = themePreference === "system"
-    ? (systemDark ? "dark" : "light")
-    : themePreference;
+  const [section, setSection] = useState<Section>("overview");
 
   async function refresh() {
     setLoading(true);
@@ -55,90 +55,97 @@ export function App({ identity }: { identity: PlatformIdentity }) {
   }
 
   useEffect(() => { void refresh(); }, []);
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_STORAGE_KEY, themePreference);
-  }, [theme, themePreference]);
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const update = (event: MediaQueryListEvent) => setSystemDark(event.matches);
-    media.addEventListener?.("change", update);
-    return () => media.removeEventListener?.("change", update);
-  }, []);
+  // Keep following the operating system while the person's choice is "Match system".
+  useEffect(() => initTheme(), []);
+
+  function navigate(next: Section) {
+    setSection(next);
+    document.getElementById(next)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const summary = summarize(components);
-  return <div className="platform-shell">
-    <aside className="platform-nav">
-      <a className="brand" href="./"><span className="brand-mark"><Boxes size={19}/></span><span>{platformDisplayName()}</span></a>
-      <nav aria-label="Platform Navigation">
-        <a aria-current="page" href="#overview"><Activity size={18}/>Overview</a>
-        <a href="#applications"><LayoutGrid size={18}/>Applications</a>
-        <a href="#services"><Database size={18}/>Services</a>
-      </nav>
-      <div className="identity">
-        <strong>{identity.displayName}</strong>
-        <span>{identity.tenantName}</span>
-        <button type="button" onClick={() => void identity.keycloak.logout({ redirectUri: window.location.origin })}>
-          <LogOut size={15}/>Sign Out
-        </button>
-      </div>
-    </aside>
-    <main>
-      <header className="topbar">
-        <div><span className="environment">{identity.environment}</span><span className="session"><ShieldCheck size={15}/>Authenticated Platform View</span></div>
-        <div className="topbar-controls">
-          <button className="theme-toggle"
-            onClick={() => setThemePreference(theme === "light" ? "dark" : "light")}
-            aria-label={`Use ${theme === "light" ? "dark" : "light"} theme`}
-            type="button">
-            {theme === "light" ? <Moon size={16}/> : <Sun size={16}/>}
-          </button>
-          <button className="refresh" disabled={loading} onClick={() => void refresh()} type="button"><RefreshCw className={loading ? "spinning" : ""} size={16}/>Refresh</button>
-        </div>
-      </header>
-      <section className="hero" id="overview">
-        <p className="eyebrow">Shared Platform</p>
-        <h1>Operational Clarity Across The Stack.</h1>
-        <p>Identity, messaging, schemas, search, analytics and model services—observed through one authenticated, read-only control surface.</p>
+  return <>
+    <TopBar<Section>
+      platform={platformDisplayName()}
+      product={PRODUCT_NAME}
+      sections={[
+        { value: "overview", label: "Overview" },
+        { value: "applications", label: "Applications" },
+        { value: "services", label: "Services" },
+      ]}
+      current={section}
+      onNavigate={navigate}
+      tenant={identity.tenantName}
+      person={{ name: identity.displayName }}
+      onThemeChange={() => {}}
+      onSignOut={() => void identity.keycloak.logout({ redirectUri: window.location.origin })}
+    />
+    <main className="dashboard">
+      <section className="page-head" id="overview">
+        <p className="kg-text-label page-eyebrow">Shared Platform · <span className="kg-tenant">{identity.environment}</span></p>
+        <h1 className="kg-text-title">Operational Clarity Across the Stack</h1>
+        <p className="kg-text-body page-lede">Identity, messaging, schemas, search, analytics and model services, observed through one authenticated, read-only view.</p>
       </section>
-      {error && <section className="error" role="alert"><strong>Unable To Load Platform Status</strong><span>{error}</span></section>}
+      {error && <div className="kg-banner kg-banner--danger" role="alert">
+        <CircleAlert {...ICON} className="kg-icon"/>
+        <div className="kg-banner__text"><p className="kg-banner__title">Couldn't Load Platform Status</p><p className="kg-banner__body">{error}</p></div>
+        <div className="kg-banner__actions"><button type="button" className="kg-btn kg-btn--sm kg-btn--secondary" onClick={() => void refresh()}>Try Again</button></div>
+      </div>}
       <section className="metrics" aria-label="Platform Summary">
-        <article><span>Available</span><strong>{summary.available}</strong><small>Healthy components</small></article>
-        <article><span>Needs Attention</span><strong>{summary.attention}</strong><small>Degraded, down or unknown</small></article>
-        <article><span>Observed</span><strong>{summary.total}</strong><small>Configured platform components</small></article>
+        <article className="kg-card"><p className="kg-card__meta">Available</p><strong className="metric">{summary.available}</strong><p className="kg-card__meta">Healthy Components</p></article>
+        <article className="kg-card"><p className="kg-card__meta">Needs Attention</p><strong className="metric">{summary.attention}</strong><p className="kg-card__meta">Degraded, Down or Unknown</p></article>
+        <article className="kg-card"><p className="kg-card__meta">Observed</p><strong className="metric">{summary.total}</strong><p className="kg-card__meta">Configured Platform Components</p></article>
       </section>
-      <section className="application-section" id="applications">
-        <div className="section-heading"><div><p className="eyebrow">Tenant Applications</p><h2>Continue Your Work</h2></div><span>{identity.applications.length} Applications</span></div>
+      <section className="dashboard-section" id="applications">
+        <div className="section-head"><h2 className="kg-text-subheading">Tenant Applications</h2><span className="kg-card__meta">{identity.applications.length} applications</span></div>
         {identity.applications.length === 0
-          ? <div className="empty">No tenant applications have been configured.</div>
-          : <div className="application-grid">{identity.applications.map(application =>
-            <a className="application-card" href={application.href} key={application.id}>
-              <span><Boxes size={18}/></span>
-              <div><h3>{application.name}</h3><p>{application.description}</p></div>
-              <ExternalLink size={16}/>
+          ? <div className="kg-card"><div className="kg-empty"><Inbox {...ICON} className="kg-icon"/><h3 className="kg-empty__title">No Tenant Applications Yet</h3><p className="kg-empty__body">Applications appear here once they are configured for this tenant.</p></div></div>
+          : <div className="card-grid">{identity.applications.map(application =>
+            <a className="kg-card application-card" href={application.href} key={application.id}>
+              <span className="application-icon"><Boxes {...ICON}/></span>
+              <span><span className="kg-card__title application-name">{application.name}</span><span className="kg-card__meta">{application.description}</span></span>
+              <ExternalLink {...ICON} className="kg-icon"/>
             </a>)}</div>}
       </section>
-      <section className="service-section" id="services">
-        <div className="section-heading"><div><p className="eyebrow">Live Inventory</p><h2>Platform Services</h2></div><span>{loading ? "Refreshing…" : `${components.length} Components`}</span></div>
+      <section className="dashboard-section" id="services">
+        <div className="section-head">
+          <h2 className="kg-text-subheading">Platform Services</h2>
+          <span className="section-actions">
+            <span className="kg-card__meta">{loading ? "Refreshing…" : `${components.length} components`}</span>
+            <button className="kg-btn kg-btn--sm kg-btn--secondary" disabled={loading} onClick={() => void refresh()} type="button">
+              <RefreshCw {...ICON} className={loading ? "kg-icon kg-spinner" : "kg-icon"}/>Refresh
+            </button>
+          </span>
+        </div>
         {loading && components.length === 0
-          ? <div className="empty">Loading authenticated platform observations…</div>
+          ? <span className="kg-loading"><RefreshCw {...ICON} className="kg-icon kg-spinner"/>Loading platform observations</span>
           : components.length === 0
-            ? <div className="empty">No platform components have been configured.</div>
-            : <div className="service-grid">{components.map(component => <ComponentCard key={component.id} value={component}/>)}</div>}
+            ? <div className="kg-card"><div className="kg-empty"><Inbox {...ICON} className="kg-icon"/><h3 className="kg-empty__title">No Platform Components Yet</h3><p className="kg-empty__body">Components appear here once they are configured for this platform.</p></div></div>
+            : <div className="card-grid">{components.map(component => <ComponentCard key={component.id} value={component}/>)}</div>}
       </section>
     </main>
-  </div>;
+  </>;
 }
 
+const STATUS: Record<string, { tone: string; word: string; Icon: typeof CircleCheck }> = {
+  UP: { tone: "kg-opstatus--success", word: "Healthy", Icon: CircleCheck },
+  DEGRADED: { tone: "kg-opstatus--warning", word: "Degraded", Icon: TriangleAlert },
+  DOWN: { tone: "kg-opstatus--danger", word: "Down", Icon: CircleAlert },
+};
+
 function ComponentCard({ value }: { value: PlatformComponent }) {
-  return <article className="service-card">
-    <div className="card-heading"><span className={`status-dot status-${value.status.toLowerCase()}`}/><span>{titleCase(value.category)}</span></div>
-    <h3>{value.name}</h3>
-    <p>{value.detail ?? "No health detail was supplied."}</p>
-    <div className="card-footer">
-      <span>{value.latencyMilliseconds === undefined ? "—" : `${value.latencyMilliseconds} ms`}</span>
-      <span>{value.checkedAt.toLocaleTimeString()}</span>
-      {value.consoleUrl && <a href={value.consoleUrl} target="_blank" rel="noreferrer">Open <ExternalLink size={14}/></a>}
+  const status = STATUS[value.status] ?? { tone: "", word: titleCase(value.status), Icon: CircleHelp };
+  return <article className="kg-card service-card">
+    <div className="kg-card__head">
+      <span className="kg-card__meta">{titleCase(value.category)}</span>
+      <span className={`kg-opstatus ${status.tone}`}><status.Icon {...ICON} className="kg-icon"/>{status.word}</span>
+    </div>
+    <h3 className="kg-card__title">{value.name}</h3>
+    <p className="service-detail">{value.detail ?? "No health detail was supplied."}</p>
+    <div className="kg-card__foot service-foot">
+      <span className="kg-card__meta">{value.latencyMilliseconds === undefined ? "No latency reported" : `${value.latencyMilliseconds} ms`}</span>
+      <span className="kg-card__meta">Checked {value.checkedAt.toLocaleTimeString()}</span>
+      {value.consoleUrl && <a className="kg-btn kg-btn--sm kg-btn--quiet" href={value.consoleUrl} target="_blank" rel="noreferrer">Open Console<ExternalLink {...ICON} className="kg-icon"/></a>}
     </div>
   </article>;
 }
