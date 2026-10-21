@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Built on the platform's deployed Keycloak image (stock Keycloak + the organization-role policy
+# provider, helm-charts/charts/keycloak-helm-chart), so this image is that Keycloak plus the
+# ForwardMeasure login theme - a drop-in replacement once REALM_LOGIN_THEME selects the theme.
 ARG KEYCLOAK_VERSION
-ARG KEYCLOAK_IMAGE_DIGEST
-FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}@${KEYCLOAK_IMAGE_DIGEST}
+ARG KEYCLOAK_AUTHZ_IMAGE_DIGEST
+FROM docker.io/forwardmeasure/keycloak:${KEYCLOAK_VERSION}-authz@${KEYCLOAK_AUTHZ_IMAGE_DIGEST}
 
-COPY --chown=1000:0 target/operations-keycloak-theme-1.0.0.jar /opt/keycloak/providers/operations-keycloak-theme.jar
+# The theme jar built by this module; path passed by the pom, so no version is typed here.
+ARG THEME_JAR
+
+COPY --chown=1000:0 ${THEME_JAR} /opt/keycloak/providers/operations-keycloak-theme.jar
 
 USER 1000

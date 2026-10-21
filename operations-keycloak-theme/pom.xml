@@ -19,9 +19,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.forwardmeasure.platform.operations</groupId>
-        <artifactId>forwardmeasure-platform-operations</artifactId>
+        <artifactId>forwardmeasure-platform-operations-neutral-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../parents/neutral/pom.xml</relativePath>
     </parent>
     <artifactId>operations-keycloak-theme</artifactId>
     <name>ForwardMeasure Platform Operations :: Keycloak Theme</name>
@@ -40,40 +40,30 @@
                                 <phase>package</phase>
                                 <goals><goal>build</goal></goals>
                             </execution>
-                        </executions>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>${container-image.registry}/${container-image.group}/forwardmeasure-keycloak:${container-image.tag}</name>
-                                    <build>
-                                        <contextDir>${project.basedir}</contextDir>
-                                        <dockerFile>src/main/docker/Dockerfile</dockerFile>
-                                        <args>
-                                            <KEYCLOAK_VERSION>${keycloak.version}</KEYCLOAK_VERSION>
-                                            <KEYCLOAK_IMAGE_DIGEST>${keycloak.image.digest}</KEYCLOAK_IMAGE_DIGEST>
-                                        </args>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>container-image-push</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <executions>
+                            <!-- Runs with the build; only actually pushes with -Dcontainer-image.push=true
+                                 (the platform parent's push-container-image profile clears docker.skip.push). -->
                             <execution>
                                 <id>push-keycloak-image</id>
                                 <phase>package</phase>
                                 <goals><goal>push</goal></goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${container-image.registry}/${container-image.group}/keycloak-login-theme:${container-image.tag}</name>
+                                    <build>
+                                        <contextDir>${project.basedir}</contextDir>
+                                        <dockerFile>src/main/docker/Dockerfile</dockerFile>
+                                        <args>
+                                            <KEYCLOAK_VERSION>${keycloak.version}</KEYCLOAK_VERSION>
+                                            <KEYCLOAK_AUTHZ_IMAGE_DIGEST>${keycloak.authz.image.digest}</KEYCLOAK_AUTHZ_IMAGE_DIGEST>
+                                            <THEME_JAR>target/${project.build.finalName}.jar</THEME_JAR>
+                                        </args>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
