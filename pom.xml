@@ -48,6 +48,10 @@
     </scm>
 
     <modules>
+        <module>parents/micronaut</module>
+        <module>parents/spring</module>
+        <module>parents/quarkus</module>
+        <module>parents/neutral</module>
         <module>operations-api-language-bindings</module>
         <module>operations-api-application</module>
         <module>operations-api-jaxrs</module>

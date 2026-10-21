@@ -19,23 +19,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.forwardmeasure.platform.operations</groupId>
-        <artifactId>operations-framework-bindings</artifactId>
+        <artifactId>forwardmeasure-platform-operations-spring-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../parents/spring/pom.xml</relativePath>
     </parent>
     <artifactId>operations-spring-binding</artifactId>
     <name>ForwardMeasure Platform Operations :: Spring Binding</name>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.forwardmeasure.platform</groupId>
-                <artifactId>forwardmeasure-platform-spring-bom</artifactId>
-                <version>${forwardmeasure.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <properties>
         <container-image.name>forwardmeasure-platform-operations-spring</container-image.name>
     </properties>
