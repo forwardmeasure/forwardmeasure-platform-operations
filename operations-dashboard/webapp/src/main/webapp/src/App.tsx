@@ -29,8 +29,9 @@ import {
 import { initTheme } from "@forwardmeasure/presentation-system/theme";
 import type { PlatformIdentity } from "./runtime";
 import { summarize, titleCase } from "./status";
-import { platformDisplayName, PRODUCT_NAME } from "./branding";
+import { platformDisplayName, PLATFORM_SYMBOL, PRODUCT_NAME } from "./branding";
 import { TopBar } from "@forwardmeasure/presentation-system/shell";
+import { OutputActions } from "@forwardmeasure/presentation-system/components";
 
 const ICON = { size: 16, strokeWidth: 1.5, absoluteStrokeWidth: true, "aria-hidden": true } as const;
 
@@ -68,6 +69,7 @@ export function App({ identity }: { identity: PlatformIdentity }) {
     <TopBar<Section>
       platform={platformDisplayName()}
       product={PRODUCT_NAME}
+      logo={PLATFORM_SYMBOL}
       sections={[
         { value: "overview", label: "Overview" },
         { value: "applications", label: "Applications" },
@@ -89,7 +91,10 @@ export function App({ identity }: { identity: PlatformIdentity }) {
       {error && <div className="kg-banner kg-banner--danger" role="alert">
         <CircleAlert {...ICON} className="kg-icon"/>
         <div className="kg-banner__text"><p className="kg-banner__title">Couldn't Load Platform Status</p><p className="kg-banner__body">{error}</p></div>
-        <div className="kg-banner__actions"><button type="button" className="kg-btn kg-btn--sm kg-btn--secondary" onClick={() => void refresh()}>Try Again</button></div>
+        <div className="kg-banner__actions">
+          <OutputActions size="sm" content={error} label="Error Details" fileName="platform-status-error.txt"/>
+          <button type="button" className="kg-btn kg-btn--sm kg-btn--secondary" onClick={() => void refresh()}>Try Again</button>
+        </div>
       </div>}
       <section className="metrics" aria-label="Platform Summary">
         <article className="kg-card"><p className="kg-card__meta">Available</p><strong className="metric">{summary.available}</strong><p className="kg-card__meta">Healthy Components</p></article>
@@ -138,7 +143,10 @@ function ComponentCard({ value }: { value: PlatformComponent }) {
   return <article className="kg-card service-card">
     <div className="kg-card__head">
       <span className="kg-card__meta">{titleCase(value.category)}</span>
-      <span className={`kg-opstatus ${status.tone}`}><status.Icon {...ICON} className="kg-icon"/>{status.word}</span>
+      <span className="service-head-end">
+        <span className={`kg-opstatus ${status.tone}`}><status.Icon {...ICON} className="kg-icon"/>{status.word}</span>
+        <OutputActions size="sm" content={value} label={`${value.name} Observation`} format="json" fileName={`platform-component-${value.id}.json`}/>
+      </span>
     </div>
     <h3 className="kg-card__title">{value.name}</h3>
     <p className="service-detail">{value.detail ?? "No health detail was supplied."}</p>

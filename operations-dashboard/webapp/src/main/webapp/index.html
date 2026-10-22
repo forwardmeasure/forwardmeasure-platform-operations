@@ -20,6 +20,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    <!-- The platform's symbol as the favicon, from the shared presentation system: PNG for browsers
+         without SVG favicons (light or dark by the browser's colour scheme), then the SVG, which
+         switches itself. Vite copies each into the build. -->
+    <link rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: light)" href="./node_modules/@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-favicon-light-32.png" />
+    <link rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)" href="./node_modules/@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-favicon-dark-32.png" />
+    <link rel="icon" type="image/svg+xml" href="./node_modules/@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-favicon.svg" />
     <title>ForwardMeasure Platform</title>
     <script vite-ignore src="./config.js"></script>
   </head>

@@ -21,7 +21,9 @@ import { initialize } from "./runtime";
 import "@forwardmeasure/presentation-system/index.css";
 import { applyThemePreference, storedThemePreference } from "@forwardmeasure/presentation-system/theme";
 import "./styles.css";
-import { dashboardTitle } from "./branding";
+import { dashboardTitle, PLATFORM_MARK } from "./branding";
+import { ThemedImage } from "@forwardmeasure/presentation-system/shell";
+import { OutputActions } from "@forwardmeasure/presentation-system/components";
 
 // Sets data-theme on <html> from the person's light / dark / match-system choice before the first
 // render, so nothing paints in the wrong theme. App keeps following the operating system.
@@ -30,8 +32,16 @@ applyThemePreference(storedThemePreference());
 document.title = dashboardTitle();
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
-root.render(<div className="boot">Opening {dashboardTitle()}…</div>);
+root.render(<div className="boot"><ThemedImage {...PLATFORM_MARK} height={96} className="boot-mark"/>Opening {dashboardTitle()}…</div>);
 
 initialize()
   .then(identity => root.render(<React.StrictMode><App identity={identity}/></React.StrictMode>))
-  .catch(failure => root.render(<main className="fatal" role="alert"><p>{dashboardTitle()}</p><h1>Unable to Start This View</h1><pre>{failure instanceof Error ? failure.message : String(failure)}</pre></main>));
+  .catch(failure => {
+    const detail = failure instanceof Error ? failure.message : String(failure);
+    root.render(<main className="fatal" role="alert">
+      <ThemedImage {...PLATFORM_MARK} height={96} className="boot-mark"/>
+      <p>{dashboardTitle()}</p>
+      <div className="kg-output-head"><h1>Unable to Start This View</h1><OutputActions content={detail} label="Error Details" fileName="dashboard-start-failure.txt"/></div>
+      <pre>{detail}</pre>
+    </main>);
+  });

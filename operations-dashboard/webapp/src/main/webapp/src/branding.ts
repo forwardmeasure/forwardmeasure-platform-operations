@@ -14,6 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import markDark from "@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-mark-dark.svg";
+import markLight from "@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-mark-light.svg";
+import symbolDark from "@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-symbol-dark.svg";
+import symbolLight from "@forwardmeasure/presentation-system/brands/kriyagentic/kriyagentic-symbol-light.svg";
+
+/** The platform's symbol, light and dark, for the TopBar's logo slot (never the lockup). */
+export const PLATFORM_SYMBOL = { light: symbolLight, dark: symbolDark };
+
+/** The platform's full mark, light and dark, for the screens shown while the dashboard starts. */
+export const PLATFORM_MARK = { light: markLight, dark: markDark };
+
 export function platformDisplayName(): string {
   return window.__FORWARDMEASURE_PLATFORM_CONFIG__?.platformDisplayName?.trim() || "kriyagentic";
 }
